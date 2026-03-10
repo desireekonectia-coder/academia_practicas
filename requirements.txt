@@ -1,0 +1,7 @@
+#Dependencias principales para esta aplicación Flask
+Flask
+psycopg2-binary
+python-dotenv
+Werkzeug
+#Dependencia para el despliegue en Railway
+gunicorn

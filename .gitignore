@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales (Virtual Environments)
+venv/
+env/
+.env
+.venv
+
+# Visual Studio Code
+.vscode/
+
+# Logs y bases de datos locales
+*.log
+db.sqlite3
+
+# PostgreSQL / pgAdmin
+*.sql
+*.backup
+*.dump
+.pgpass
+
+# Node / Dependencias (por si usas librerías JS en el futuro)
+node_modules/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
