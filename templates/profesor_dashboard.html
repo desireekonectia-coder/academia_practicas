@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Panel del Profesor</h1>
+    <p>Bienvenida, Profesora {{ nombre }}</p>
+    <ul>
+        <li>Ver mis clases</li>
+        <li>Subir calificaciones</li>
+    </ul>
+    <a href="{{ url_for('logout') }}">Cerrar Sesión</a>
+</div>
+{% endblock %}
