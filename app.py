@@ -79,6 +79,124 @@ def panel_admin():
         return "Acceso denegado: No eres administrador", 403
     return render_template("admin_dashboard.html", nombre=session['usuario'])
 
+@app.route("/admin/gestionar", methods=["GET", "POST"])
+@login_requerido
+def gestionar_usuarios():
+    if session.get('rol') != 'admin':
+        return "Acceso denegado", 403
+    
+    conn = conectar_bd()
+    cur = conn.cursor()
+
+    if request.method == "POST":
+        # Recoger datos del formulario
+        nombre = request.form['nombre']
+        password = generate_password_hash(request.form['password'])
+        rol = request.form['rol'] # 'profesor' o 'alumno'
+
+        cur.execute("INSERT INTO usuarios (nombre, password_hash, rol) VALUES (%s, %s, %s)", 
+                    (nombre, password, rol))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect(url_for('gestionar_usuarios'))
+
+# --- ESTA ES LA PARTE QUE TE FALTA ---
+    # Obtenemos todos los usuarios para llenar los selects del HTML
+    cur.execute("SELECT id, nombre FROM usuarios ORDER BY nombre ASC")
+    usuarios_db = cur.fetchall() # Esto devuelve una lista de tuplas [(1, 'Pepe'), (2, 'Maria')]
+    
+    # Convertimos a una lista de diccionarios para que el HTML los entienda mejor
+    lista_usuarios = [{"id": u[0], "nombre": u[1]} for u in usuarios_db]
+
+    cur.close()
+    conn.close()
+
+    return render_template("gestionar.html", lista_usuarios=lista_usuarios)
+
+@app.route("/admin/insertar_nota", methods=["POST"])
+@login_requerido
+def insertar_nota():
+    # 'alumno_id' ahora vendrá de lo que elijas en el desplegable
+    alumno_id = request.form['alumno_id']
+    materia = request.form['materia']
+    nota = request.form['nota']
+    fecha = request.form['fecha']
+
+    conn = conectar_bd()
+    cur = conn.cursor()
+    try:
+        cur.execute("INSERT INTO notas (alumno_id, materia, nota, fecha_examen) VALUES (%s, %s, %s, %s)",
+                    (alumno_id, materia, nota, fecha))
+        conn.commit()
+    except Exception as e:
+        print(f"Error: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+        conn.close()
+    
+    # Redirigir de vuelta para seguir trabajando
+    return redirect(url_for('gestionar_usuarios'))
+    
+@app.route("/admin/insertar_examen", methods=["POST"])
+@login_requerido
+def insertar_examen():
+    if session.get('rol') != 'admin':
+        return "No autorizado", 403
+        
+    alumno_id = request.form['alumno_id']
+    materia = request.form['materia']
+    fecha = request.form['fecha']
+    descripcion = request.form.get('descripcion', '')
+
+    conn = conectar_bd()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            INSERT INTO examenes (alumno_id, materia, fecha_examen, descripcion) 
+            VALUES (%s, %s, %s, %s)
+        """, (alumno_id, materia, fecha, descripcion))
+        conn.commit()
+    except Exception as e:
+        print(f"Error: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+        conn.close()
+    
+    return redirect(url_for('gestionar_usuarios'))
+
+@app.route("/admin/insertar_observacion", methods=["POST"])
+@login_requerido
+def insertar_observacion():
+    if session.get('rol') != 'admin':
+        return "No autorizado", 403
+
+    # Recogemos los datos del formulario
+    alumno_id = request.form['alumno_id']
+    texto = request.form['texto']
+    fecha = request.form['fecha']
+
+    conn = conectar_bd()
+    cur = conn.cursor()
+    try:
+        # Ajusta los nombres de las columnas según tu tabla 'observaciones'
+        cur.execute("""
+            INSERT INTO observaciones (alumno_id, texto, fecha) 
+            VALUES (%s, %s, %s)
+        """, (alumno_id, texto, fecha))
+        conn.commit()
+    except Exception as e:
+        print(f"Error al insertar observación: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+        conn.close()
+
+    # Redirigimos de vuelta a la gestión
+    return redirect(url_for('gestionar_usuarios'))
+
 @app.route("/profesor")
 @login_requerido
 def panel_profesor():

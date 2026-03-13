@@ -5,7 +5,7 @@
     <h1>Panel de Administración</h1>
     <p>Bienvenida, Administradora {{ nombre }}</p>
     <ul>
-        <li>Gestionar Usuarios</li>
+        <li><a href="{{ url_for('gestionar_usuarios') }}">Gestionar Usuarios y Datos</a></li>
         <li>Configuración del Sistema</li>
     </ul>
     <a href="{{ url_for('logout') }}">Cerrar Sesión</a>
